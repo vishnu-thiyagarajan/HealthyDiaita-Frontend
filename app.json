@@ -2,6 +2,8 @@
   "expo": {
     "name": "Healthy-Diaita",
     "slug": "Healthy-Diaita",
+    "plugins": ["@react-native-google-signin/google-signin"],
+    "scheme": "Healthy-Diaita",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,13 +20,20 @@
       "supportsTablet": true
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.vishnuthiyagarajan.HealthyDiaita"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5cacfed9-d6e8-4e97-9add-6b96f7dde8fa"
+      }
     }
   }
 }

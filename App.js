@@ -1,20 +1,13 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import 'expo-dev-client';
+import { AuthContext } from './App/Context/AuthContext';
+import { useState, useEffect } from 'react';
+import LandingScreen from './App/Components/LandingScreen';
 
 export default function App() {
+  const [userData, setUserData] = useState(null);
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+      <AuthContext.Provider value={{userData, setUserData}}>
+        <LandingScreen />
+      </AuthContext.Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
