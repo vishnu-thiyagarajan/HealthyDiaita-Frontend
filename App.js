@@ -1,6 +1,7 @@
 import 'expo-dev-client';
+import 'react-native-gesture-handler';
 import { AuthContext } from './App/Context/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import LandingScreen from './App/Components/LandingScreen';
 
 export default function App() {

@@ -1,5 +1,5 @@
-import React, { useContext, useEffect} from 'react'
-import { TouchableOpacity, Image, StyleSheet, Text, View } from 'react-native'
+import React, { useContext, useEffect, useState} from 'react'
+import { TouchableOpacity, Image, StyleSheet, Text, View, ActivityIndicator } from 'react-native'
 import Colors from '../Shared/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -11,17 +11,19 @@ import { set, get } from '../Shared/LocalStorage';
 
 export default function Login({navigation}) {
   const {userData, setUserData} = useContext(AuthContext);
-  if(userData) navigation.navigate('Home');
+  const [loading, setLoading] = useState(false);
   GoogleSignin.configure({
     webClientId: '23129691985-odca9vqg3hogcmfahni4regvh2nfq6of.apps.googleusercontent.com',
   });
 
   const signIn = async () => {
       try {
+        setLoading(true);
         await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
         const userInfo = await GoogleSignin.signIn();
         setUserData(userInfo);
         await set('auth', userInfo);
+        setLoading(false);
       } catch (error) {
         if (error.code === statusCodes.SIGN_IN_CANCELLED) {
           alert('The login flow is cancelled!');
@@ -46,12 +48,18 @@ export default function Login({navigation}) {
   // };
   useEffect(()=>{
     const fetchUser = async() => {
+      setLoading(true);
       const resp = await get('auth');
       if(resp) navigation.navigate('Home');
       setUserData(resp||null);
+      setLoading(false);
     }
     fetchUser();
   },[]);
+  
+  useEffect(()=>{
+    if(userData) navigation.navigate('Home');
+  },[userData])
 
   return (
     <View>
@@ -62,10 +70,11 @@ export default function Login({navigation}) {
           <Text style={styles.welcome}>Healthy Diaita</Text>
       </View>
       <Text style={styles.login} >Login/SignUp</Text>
-      <TouchableOpacity onPress={signIn} style={styles.button}>
+      <TouchableOpacity onPress={signIn} style={styles.button} disabled={loading}>
           <Ionicons name="logo-google" size={24} color={Colors.secondary} />
           <Text style={styles.buttonText}>Sign In with Google</Text>
       </TouchableOpacity>
+      <ActivityIndicator size="large" animating={loading} />
     </View>
   )
 }
