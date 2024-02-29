@@ -1,33 +1,22 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { Text, StyleSheet, Button, View, ActivityIndicator, FlatList } from 'react-native'
-import { getFoodIntakes } from '../Shared/Services/FoodIntake';
+import { Text, StyleSheet, TouchableOpacity, View, FlatList } from 'react-native'
+import { getFoodIntakes, deleteFoodIntakes } from '../Shared/Services/FoodIntake';
 import { AuthContext } from '../Context/AuthContext';
 import { getDateAndTimeFormatted, getMealTimeFormatted } from '../Shared/Utils/utils';
 import Colors from '../Shared/Colors';
+import { Ionicons } from '@expo/vector-icons';
+import { AlertTwoButton } from '../Shared/Components/AlertWithButton';
+import { ListFooterComponent } from '../Components/ListFooterComponent';
 
 const pageSize = 25;
 let stopFetchMore = true;
-
-const ListFooterComponent = () => (
-  <Text
-    style={{
-      fontSize: 16,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      padding: 5,
-      marginBottom: 10,
-    }}
-  >
-    Loading...
-  </Text>
-);
 
 const formatResponse = (data) =>{
   const obj = {};
   for(let item of data){
     const {date, time}= getDateAndTimeFormatted(item?.attributes?.date);
     const dailyFood = {
-      'key': item?.attributes?.createdAt,
+      'key': item?.id,
       'mealtime': getMealTimeFormatted(time),
       'food': item?.attributes?.food,
       'note': item?.attributes?.note
@@ -46,16 +35,27 @@ export default function FoodIntake () {
     const [pageCount, setPageCount] = useState(0);
     const [loadingMore, setLoadingMore] = useState(false);
     const {userData} = useContext(AuthContext);
-    
+
     const getData = async() => {
       setLoadingMore(true);
-      const resp = await getFoodIntakes(userData?.user?.email, currentPage + 1, pageSize).catch((e)=>alert(e));
+      const resp = await getFoodIntakes(userData?.user?.email, 1, pageSize).catch((e)=>alert(e));
       let formattedResp = formatResponse(resp?.data?.data);
       setData({...formattedResp});
       setLoadingMore(false);
       setCurrentPage(resp?.data?.meta?.pagination?.page);
       setPageCount(resp?.data?.meta?.pagination?.pageCount);
     };
+
+    const DeleteAlert = (id)=>{
+      const del = async () => {
+        const res = await deleteFoodIntakes(id).catch(err => alert(err.message));
+        if(res.status === 200) {
+          alert('Data was deleted successfully!');
+          getData();
+        }
+      }
+      return AlertTwoButton('Deleting...', 'Are you sure you want to delete?', null, del);
+    }
 
     const handleOnEndReached = async () => {
       setLoadingMore(true);
@@ -97,12 +97,18 @@ export default function FoodIntake () {
             <Text style={styles.date}>{item}</Text>
               <View style={styles.itemRow}>
                   {data[item].map(meal=>{
+                    const delFunc = () => DeleteAlert(meal.key);
                     return (
                       <View key={meal.key}>
-                        <Text style={styles.meal}>{meal.mealtime}</Text>
+                        <View style={styles.section}>
+                          <Text style={styles.meal}>{meal.mealtime}</Text>
+                          <TouchableOpacity onPress={delFunc} activeOpacity={0.8}>
+                            <Ionicons name="trash-outline" size={24} color={Colors.primary} />
+                          </TouchableOpacity>
+                        </View>
                         <View style={styles.itemSubRow}>
                           <Text style={styles.meal}>{meal.food}</Text>
-                          <Text style={styles.meal}>note: {meal.note}</Text>
+                          {meal.note && <Text style={styles.meal}>note: {meal.note}</Text>}
                         </View>
                       </View>
                     )
@@ -130,5 +136,6 @@ const styles = StyleSheet.create({
     },
     meal:{
       color: Colors.darkText,
-    }
+    },
+    section: {flex:1, flexDirection:'row', justifyContent:'space-between'}
   })

@@ -12,7 +12,7 @@ import { set } from '../Shared/LocalStorage';
 
 const DrawerList = [
   {icon: 'home-outline', label: 'Home', navigateTo: 'Home'},
-  {icon: 'person-circle', label: 'Profile', navigateTo: ''},
+  {icon: 'person-circle', label: 'Documents', navigateTo: 'Documents'},
   {icon: 'reader-outline', label: 'Food Intake', navigateTo: 'FoodIntake'},
 ];
 const DrawerLayout = ({icon, label, navigateTo}) => {
@@ -57,9 +57,9 @@ function DrawerContent(props) {
         }
     };
     return (
-        <View style={{flex: 1}}>
+        <View style={styles.drawerContent}>
         <DrawerContentScrollView {...props}>
-            <View style={styles.drawerContent}>
+            <View>
             <TouchableOpacity activeOpacity={0.8}>
                 <View style={styles.userInfoSection}>
                 <WelcomeHeader/>
@@ -101,7 +101,6 @@ const styles = StyleSheet.create({
   caption: {
     fontSize: 13,
     lineHeight: 14,
-    // color: '#6e6e6e',
     width: '100%',
   },
   row: {
@@ -112,7 +111,6 @@ const styles = StyleSheet.create({
   section: {
     flexDirection: 'row',
     alignItems: 'center',
-    // marginRight: 15,
   },
   paragraph: {
     fontWeight: 'bold',

@@ -2,7 +2,9 @@
   "expo": {
     "name": "Healthy-Diaita",
     "slug": "Healthy-Diaita",
-    "plugins": ["@react-native-google-signin/google-signin"],
+    "plugins": ["@react-native-google-signin/google-signin",
+                "@config-plugins/react-native-blob-util",
+                "@config-plugins/react-native-pdf"],
     "scheme": "Healthy-Diaita",
     "version": "1.0.0",
     "orientation": "portrait",

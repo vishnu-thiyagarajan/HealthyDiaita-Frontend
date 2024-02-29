@@ -8,6 +8,8 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import DrawerContent from './DrawerContent';
 import Colors from '../Shared/Colors';
+import Documents from '../Pages/Documents';
+import ShowImage from '../Pages/ShowImage';
 
 const StackNav = () => {
     const Stack = createNativeStackNavigator();
@@ -47,6 +49,17 @@ const StackNav = () => {
             <Stack.Screen 
                 name="FoodIntake" 
                 component={FoodIntake} 
+            />
+            <Stack.Screen 
+                name="Documents" 
+                component={Documents} 
+            />
+            <Stack.Screen 
+                name="ShowImage"  
+                component={ShowImage}
+                options={{
+                    headerShown: false
+                }}
             />
         </Stack.Navigator>
     )

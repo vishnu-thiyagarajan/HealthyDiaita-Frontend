@@ -55,7 +55,8 @@ export default function Home (){
       enabled
       // keyboardVerticalOffset={100}
       behavior="height"
-      style={{ flex: 1 }}>
+      style={styles.wrapper}
+      >
       <ScrollView style={styles.container}>
       <Text style={styles.caption}>Add your food intake here!</Text>
       <Text>Intake date?</Text>
@@ -158,5 +159,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
 },
-buttonText: { marginLeft: 10 ,fontSize: 20, color: Colors.secondary, textAlign: 'center', fontWeight: 'bold'},
+  buttonText: { 
+    marginLeft: 10,
+    fontSize: 20, 
+    color: Colors.secondary, 
+    textAlign: 'center', 
+    fontWeight: 'bold'
+  },
+  wrapper: { flex: 1 }
 })

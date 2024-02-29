@@ -8,8 +8,8 @@ export default function WelcomeHeader () {
     return (
         <View style={styles.container}>
             <View>
-            <Text style={{color: Colors.darkText}}>Hello,</Text>
-            <Text style={{color: Colors.darkText}}>{userData?.user?.name||''}</Text>
+            <Text style={styles.text}>Hello,</Text>
+            <Text style={styles.text}>{userData?.user?.name||''}</Text>
             </View>
             <Image source={userData?.user?.photo ? {uri: userData.user.photo} : require('./../Assets/Image/default-profile-image.png')} style={styles.profileimg}/>
         </View>
@@ -30,5 +30,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: Colors.darkText,
         marginRight: 15,
+    },
+    text: {
+        color: Colors.darkText
     }
 })
