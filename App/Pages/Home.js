@@ -6,6 +6,7 @@ import Colors from '../Shared/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { postFoodIntakes } from '../Shared/Services/FoodIntake';
 import { AuthContext } from '../Context/AuthContext';
+import Loader from '../Components/Loader';
 
 const items = [
   {label:'BreakFast', value:'3,30,0,0'},
@@ -57,6 +58,7 @@ export default function Home (){
       behavior="height"
       style={styles.wrapper}
       >
+      {loading && <Loader/>}
       <ScrollView style={styles.container}>
       <Text style={styles.caption}>Add your food intake here!</Text>
       <Text>Intake date?</Text>

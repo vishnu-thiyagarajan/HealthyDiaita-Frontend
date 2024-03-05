@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Healthy-Diaita",
+    "name": "Healthy Diaita",
     "slug": "Healthy-Diaita",
     "plugins": ["@react-native-google-signin/google-signin",
                 "@config-plugins/react-native-blob-util",

@@ -1,13 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Image, View, Dimensions, Pressable, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { AuthContext } from '../Context/AuthContext';
-import { getDocuments, deleteDocuments, uploadDocuments, postDocuments } from '../Shared/Services/Documents';
-import { baseURL } from '../Shared/Axios';
+import { getDocuments, deleteDocuments, uploadDocuments, postDocuments, deleteFile } from '../Shared/Services/Documents';
+import { BACKEND_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 import Colors from '../Shared/Colors';
 import { AlertTwoButton } from '../Shared/Components/AlertWithButton';
-import { ListFooterComponent } from '../Components/ListFooterComponent'
 import DocumentPicker from 'react-native-document-picker'
+import Loader from '../Components/Loader';
+
 const deviceHeight = Dimensions.get('window').height;
 const deviceWidth = Dimensions.get('window').width;
 const pageSize = 20;
@@ -19,10 +20,11 @@ const formatResp = (resp) => {
         const file = item.attributes?.file?.data?.attributes;
         return {
             id: item.id,
+            fileid: item.attributes?.file?.data?.id,
             name: file?.name,
-            url: baseURL + file?.url,
+            url: BACKEND_URL + file?.url,
             ext:  file?.ext,
-            thumbnail: baseURL + file?.formats?.thumbnail?.url,
+            thumbnail: BACKEND_URL + file?.formats?.thumbnail?.url,
         }
     })
 }
@@ -42,12 +44,15 @@ export default function Documents (){
         setCurrentPage(resp?.data?.meta?.pagination?.page);
         setPageCount(resp?.data?.meta?.pagination?.pageCount);
     }
-    const DeleteAlert = (id)=>{
+    const DeleteAlert = (id, fileid)=>{
       const del = async () => {
-        const res = await deleteDocuments(id).catch(err => alert(err.message));
-        if(res.status === 200) {
-          alert('Data was deleted successfully!');
-          getData();
+        const resp = await deleteFile(fileid).catch(err => alert(JSON.stringify(err)));
+        if(resp.status === 200) {
+          const res = await deleteDocuments(id).catch(err => alert(JSON.stringify(err)));
+          if(res.status === 200) {
+            alert('Data was deleted successfully!');
+            getData();
+          }
         }
       }
       return AlertTwoButton('Deleting...', 'Are you sure you want to delete?', null, del);
@@ -72,8 +77,8 @@ export default function Documents (){
     },[])
 
     const pickFile = async () => {
+      setLoadingMore(true);
       try {
-        setLoadingMore(true);
         const docRes = await DocumentPicker.pickSingle({
           type: [DocumentPicker.types.images, DocumentPicker.types.pdf]
         });
@@ -90,7 +95,6 @@ export default function Documents (){
         if(!refId) throw new Error('Record not created');
         formData.append('refId', String(refId));
         const res = await uploadDocuments(formData);
-        setLoadingMore(false);
         if(res.status === 200) {
           alert('File was uploaded successfully!');
           getData();
@@ -99,10 +103,12 @@ export default function Documents (){
         if(!DocumentPicker.isCancel(error))
         alert("Error while uploading file: ", error);
       }
+      setLoadingMore(false);
     };
 
     return (
       <>
+        {loadingMore && <Loader/>}
         <View style={styles.header}>
           <TouchableOpacity onPress={pickFile} style={styles.button} disabled={loadingMore}>
             <Text style={styles.buttonText}>Upload Documents</Text>
@@ -110,6 +116,8 @@ export default function Documents (){
           <Text style={styles.helperText}>*Long press to delete uploaded files!</Text>
         </View>
         <FlatList
+          contentContainerStyle={{ flexGrow: 1 }}
+          ListEmptyComponent={() => loadingMore ? <Loader/> : <Text style={{textAlign: "center"}}>No Files have been added</Text>}
           style={styles.container}
           data={data}
           numColumns={3}
@@ -118,10 +126,10 @@ export default function Documents (){
           onScrollBeginDrag={() => {
             stopFetchMore = false;
           }}
-          ListFooterComponent={() => loadingMore && <ListFooterComponent />}
+          ListFooterComponent={() => loadingMore && <Loader />}
           onEndReached={handleOnEndReached}
           renderItem={({item})=>{
-            const delFunc = () => DeleteAlert(item.id);
+            const delFunc = () => DeleteAlert(item.id, item.fileid);
             const openFunc = ()=> navigeTo(item);
             return( 
               <Pressable key={item.id} onPress={item.name ? openFunc : null} onLongPress={delFunc}>

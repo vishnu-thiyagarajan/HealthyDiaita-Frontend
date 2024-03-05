@@ -10,6 +10,7 @@ import DrawerContent from './DrawerContent';
 import Colors from '../Shared/Colors';
 import Documents from '../Pages/Documents';
 import ShowImage from '../Pages/ShowImage';
+import Payments from '../Pages/Payments';
 
 const StackNav = () => {
     const Stack = createNativeStackNavigator();
@@ -60,6 +61,10 @@ const StackNav = () => {
                 options={{
                     headerShown: false
                 }}
+            />
+            <Stack.Screen 
+                name="Payments"  
+                component={Payments}
             />
         </Stack.Navigator>
     )

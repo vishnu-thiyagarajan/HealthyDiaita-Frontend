@@ -11,9 +11,10 @@ import { AuthContext } from '../Context/AuthContext';
 import { set } from '../Shared/LocalStorage';
 
 const DrawerList = [
-  {icon: 'home-outline', label: 'Home', navigateTo: 'Home'},
-  {icon: 'person-circle', label: 'Documents', navigateTo: 'Documents'},
-  {icon: 'reader-outline', label: 'Food Intake', navigateTo: 'FoodIntake'},
+  {icon: 'home', label: 'Home', navigateTo: 'Home'},
+  {icon: 'document', label: 'Documents', navigateTo: 'Documents'},
+  {icon: 'restaurant', label: 'Food Intake', navigateTo: 'FoodIntake'},
+  {icon: 'card', label: 'Payments', navigateTo: 'Payments'},
 ];
 const DrawerLayout = ({icon, label, navigateTo}) => {
   const navigation = useNavigation();

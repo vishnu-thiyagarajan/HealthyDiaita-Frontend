@@ -6,7 +6,7 @@ import { getDateAndTimeFormatted, getMealTimeFormatted } from '../Shared/Utils/u
 import Colors from '../Shared/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertTwoButton } from '../Shared/Components/AlertWithButton';
-import { ListFooterComponent } from '../Components/ListFooterComponent';
+import Loader from '../Components/Loader';
 
 const pageSize = 25;
 let stopFetchMore = true;
@@ -81,7 +81,10 @@ export default function FoodIntake () {
         getData();
       },[]);
     return (
+      <>
+        {loadingMore && <Loader />}
         <FlatList
+        ListEmptyComponent={() => loadingMore ? <Loader /> : <Text style={{textAlign: "center"}}>No FoodIntake have been added</Text>}
         style={styles.container}
         data={Object.keys(data)}
         keyExtractor={(item, index) => index.toString()}
@@ -89,7 +92,7 @@ export default function FoodIntake () {
         onScrollBeginDrag={() => {
           stopFetchMore = false;
         }}
-        ListFooterComponent={() => loadingMore && <ListFooterComponent />}
+        ListFooterComponent={() => loadingMore && <Loader />}
         onEndReached={handleOnEndReached}
         renderItem={({item})=>{
           return (
@@ -117,7 +120,9 @@ export default function FoodIntake () {
             </>
           )
         }}
-        />)
+      />
+    </>
+  )
 }
 
 const styles = StyleSheet.create({

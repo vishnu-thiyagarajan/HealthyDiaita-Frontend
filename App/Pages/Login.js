@@ -8,6 +8,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import { AuthContext } from '../Context/AuthContext';
 import { set, get } from '../Shared/LocalStorage';
+import Loader from '../Components/Loader';
 
 export default function Login({navigation}) {
   const {userData, setUserData} = useContext(AuthContext);
@@ -23,7 +24,6 @@ export default function Login({navigation}) {
         const userInfo = await GoogleSignin.signIn();
         setUserData(userInfo);
         await set('auth', userInfo);
-        setLoading(false);
       } catch (error) {
         if (error.code === statusCodes.SIGN_IN_CANCELLED) {
           alert('The login flow is cancelled!');
@@ -35,6 +35,7 @@ export default function Login({navigation}) {
           alert(`unexpected error : ${error}`);
         }
       }
+    setLoading(false);
   };
 
   // const isSignedIn = async () => {
@@ -62,7 +63,7 @@ export default function Login({navigation}) {
   },[userData])
 
   return (
-    <View>
+    <View style={{flex:1}}>
       <Image source={require('./../Assets/Image/login.png')} style={styles.image} />
       <View style={styles.container}>
           <Text style={styles.welcome}>Welcome</Text>
@@ -74,7 +75,7 @@ export default function Login({navigation}) {
           <Ionicons name="logo-google" size={24} color={Colors.secondary} />
           <Text style={styles.buttonText}>Sign In with Google</Text>
       </TouchableOpacity>
-      <ActivityIndicator size="large" animating={loading} />
+      {loading && <Loader />}
     </View>
   )
 }

@@ -6,5 +6,6 @@ export const uploadDocuments = (data) => apiClient.post(`/upload`, data,  {
     headers: {
     'Content-Type': 'multipart/form-data',
     }
-    });
+});
+export const deleteFile = (id) => apiClient.delete(`/upload/files/${id}`);
 export const deleteDocuments = (id) => apiClient.delete(`/documents/${id}`);
