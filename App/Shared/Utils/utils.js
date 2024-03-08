@@ -36,3 +36,9 @@ export const verifySignature = (orderId, paymentId, razorpaySignature) => {
     const generatedSignature = CryptoJS.HmacSHA256(text, RP_PASSWORD).toString();
     return generatedSignature === razorpaySignature;
 }
+
+   
+export const capitalizeFirstLetter = (word) => {
+    if(!word) return ''
+    return(word[0].toUpperCase() + word.slice(1));
+}

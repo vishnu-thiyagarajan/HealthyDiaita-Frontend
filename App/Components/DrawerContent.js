@@ -1,14 +1,12 @@
 import React, {useContext} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import {DrawerContentScrollView, DrawerItem} from '@react-navigation/drawer';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useNavigation} from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import WelcomeHeader from './WelcomeHeader';
 import Colors from '../Shared/Colors';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { AuthContext } from '../Context/AuthContext';
-import { set } from '../Shared/LocalStorage';
 
 const DrawerList = [
   {icon: 'home', label: 'Home', navigateTo: 'Home'},
@@ -42,21 +40,8 @@ const DrawerItems = props => {
     });
   };
 function DrawerContent(props) {
-    const { setUserData } = useContext(AuthContext);
-    const navigation = useNavigation();
-    GoogleSignin.configure({
-        webClientId: '23129691985-odca9vqg3hogcmfahni4regvh2nfq6of.apps.googleusercontent.com',
-        });
-    const signOut = async () => {
-        try {
-            await GoogleSignin.signOut();
-            setUserData(null);
-            await set('auth', null);
-            navigation.navigate('Login');
-        } catch (error) {
-            alert(`unexpected error : ${error}`);
-        }
-    };
+    const { signOut } = useContext(AuthContext);
+    
     return (
         <View style={styles.drawerContent}>
         <DrawerContentScrollView {...props}>

@@ -33,41 +33,59 @@ export default function Documents (){
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [pageCount, setPageCount] = useState(0);
-    const [loadingMore, setLoadingMore] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const {userData} = useContext(AuthContext);
 
     const getData = async () => {
-        setLoadingMore(true);
-        const resp = await getDocuments(userData?.user?.email, 1, pageSize).catch((e)=>alert(e));
+        setRefreshing(true);
+        try {
+        const resp = await getDocuments(userData?.id, 1, pageSize).catch((e)=>alert(e));
         setData(formatResp(resp));
-        setLoadingMore(false);
         setCurrentPage(resp?.data?.meta?.pagination?.page);
         setPageCount(resp?.data?.meta?.pagination?.pageCount);
+        } catch (e) {
+          alert(e);
+        } finally {
+          setRefreshing(false);
+        }
     }
     const DeleteAlert = (id, fileid)=>{
       const del = async () => {
-        const resp = await deleteFile(fileid).catch(err => alert(JSON.stringify(err)));
-        if(resp.status === 200) {
-          const res = await deleteDocuments(id).catch(err => alert(JSON.stringify(err)));
-          if(res.status === 200) {
-            alert('Data was deleted successfully!');
-            getData();
+        try {
+          setLoading(true);
+          const resp = await deleteFile(fileid).catch(err => alert(JSON.stringify(err)));
+          if(resp.status === 200) {
+            const res = await deleteDocuments(id).catch(err => alert(JSON.stringify(err)));
+            if(res.status === 200) {
+              alert('Data was deleted successfully!');
+              getData();
+            }
           }
+        } catch (e) {
+          alert(e);
+        } finally {
+          setLoading(false);
         }
       }
       return AlertTwoButton('Deleting...', 'Are you sure you want to delete?', null, del);
     }
     const handleOnEndReached = async () => {
-      setLoadingMore(true);
-      if (!stopFetchMore) {
-        if (currentPage >= pageCount) return setLoadingMore(false);
-        const resp = await getDocuments(userData?.user?.email, currentPage + 1, pageSize).catch((e)=>alert(e));
-        const formattedResp = formatResp(resp);
-        setData([...data, ...formattedResp]);
-        setCurrentPage(resp?.data?.meta?.pagination?.page);
-        stopFetchMore = true;
+      setRefreshing(true);
+      try {
+        if (!stopFetchMore) {
+          if (currentPage >= pageCount) return setRefreshing(false);
+          const resp = await getDocuments(userData?.id, currentPage + 1, pageSize).catch((e)=>alert(e));
+          const formattedResp = formatResp(resp);
+          setData([...data, ...formattedResp]);
+          setCurrentPage(resp?.data?.meta?.pagination?.page);
+          stopFetchMore = true;
+        }
+      } catch (e) {
+        alert(e);
+      } finally {
+        setRefreshing(false);
       }
-      setLoadingMore(false);
     };
     const navigeTo = (item)=>{
       navigation.navigate('ShowImage', item);
@@ -77,11 +95,15 @@ export default function Documents (){
     },[])
 
     const pickFile = async () => {
-      setLoadingMore(true);
+      setLoading(true);
       try {
         const docRes = await DocumentPicker.pickSingle({
           type: [DocumentPicker.types.images, DocumentPicker.types.pdf]
         });
+        if(docRes.size > 10000000) {
+          setLoading(false);
+          return alert("File size should be less than or equal to 10MB")
+        }
         const formData = new FormData();
         formData.append('files', {
           uri: docRes.uri,
@@ -90,7 +112,7 @@ export default function Documents (){
         });
         formData.append('ref', 'api::document.document');
         formData.append('field', 'file');
-        const record = await postDocuments({ data: { email: userData?.user?.email}});
+        const record = await postDocuments({ data: { users_permissions_user: userData?.id}});
         const refId = record?.data?.data?.id;
         if(!refId) throw new Error('Record not created');
         formData.append('refId', String(refId));
@@ -102,23 +124,26 @@ export default function Documents (){
       } catch (error) {
         if(!DocumentPicker.isCancel(error))
         alert("Error while uploading file: ", error);
+      } finally {
+        setLoading(false);
       }
-      setLoadingMore(false);
     };
 
     return (
       <>
-        {loadingMore && <Loader/>}
+        {loading && <Loader/>}
         <View style={styles.header}>
-          <TouchableOpacity onPress={pickFile} style={styles.button} disabled={loadingMore}>
+          <TouchableOpacity onPress={pickFile} style={styles.button} disabled={loading}>
             <Text style={styles.buttonText}>Upload Documents</Text>
           </TouchableOpacity>
           <Text style={styles.helperText}>*Long press to delete uploaded files!</Text>
         </View>
         <FlatList
           contentContainerStyle={{ flexGrow: 1 }}
-          ListEmptyComponent={() => loadingMore ? <Loader/> : <Text style={{textAlign: "center"}}>No Files have been added</Text>}
+          ListEmptyComponent={() => refreshing ? <Loader/> : <Text style={styles.centerText}>No Files have been added</Text>}
           style={styles.container}
+          onRefresh={getData}
+          refreshing={refreshing}
           data={data}
           numColumns={3}
           keyExtractor={(item, index) => index.toString()}
@@ -126,7 +151,6 @@ export default function Documents (){
           onScrollBeginDrag={() => {
             stopFetchMore = false;
           }}
-          ListFooterComponent={() => loadingMore && <Loader />}
           onEndReached={handleOnEndReached}
           renderItem={({item})=>{
             const delFunc = () => DeleteAlert(item.id, item.fileid);
@@ -186,4 +210,5 @@ const styles = StyleSheet.create({
   },
   header: { marginHorizontal: 30, marginVertical: 20,},
   helperText: { fontSize: 12, color: Colors.secondary, textAlign: 'center' },
+  centerText: {textAlign: "center"},
 })

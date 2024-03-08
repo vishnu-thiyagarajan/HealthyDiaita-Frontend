@@ -1,69 +1,16 @@
-import React, { useContext, useEffect, useState} from 'react'
-import { TouchableOpacity, Image, StyleSheet, Text, View, ActivityIndicator } from 'react-native'
+import React, { useContext} from 'react'
+import { TouchableOpacity, Image, StyleSheet, Text, View, StatusBar } from 'react-native'
 import Colors from '../Shared/Colors'
 import { Ionicons } from '@expo/vector-icons'
-import {
-  GoogleSignin,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
 import { AuthContext } from '../Context/AuthContext';
-import { set, get } from '../Shared/LocalStorage';
 import Loader from '../Components/Loader';
 
-export default function Login({navigation}) {
-  const {userData, setUserData} = useContext(AuthContext);
-  const [loading, setLoading] = useState(false);
-  GoogleSignin.configure({
-    webClientId: '23129691985-odca9vqg3hogcmfahni4regvh2nfq6of.apps.googleusercontent.com',
-  });
-
-  const signIn = async () => {
-      try {
-        setLoading(true);
-        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-        const userInfo = await GoogleSignin.signIn();
-        setUserData(userInfo);
-        await set('auth', userInfo);
-      } catch (error) {
-        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-          alert('The login flow is cancelled!');
-        } else if (error.code === statusCodes.IN_PROGRESS) {
-          alert('Sign in operation is in progress already!');
-        } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-          alert('Google Play services not available or outdated!');
-        } else {
-          alert(`unexpected error : ${error}`);
-        }
-      }
-    setLoading(false);
-  };
-
-  // const isSignedIn = async () => {
-  //     const isSignedIn = await GoogleSignin.isSignedIn();
-  //     return isSignedIn;
-  // };
-
-  // const getCurrentUser = async () => {
-  //     const currentUser = await GoogleSignin.getCurrentUser();
-  //     return currentUser;
-  // };
-  useEffect(()=>{
-    const fetchUser = async() => {
-      setLoading(true);
-      const resp = await get('auth');
-      if(resp) navigation.navigate('Home');
-      setUserData(resp||null);
-      setLoading(false);
-    }
-    fetchUser();
-  },[]);
-  
-  useEffect(()=>{
-    if(userData) navigation.navigate('Home');
-  },[userData])
+export default function Login() {
+  const {loading, signIn} = useContext(AuthContext);
 
   return (
     <View style={{flex:1}}>
+      <StatusBar style="auto"/>
       <Image source={require('./../Assets/Image/login.png')} style={styles.image} />
       <View style={styles.container}>
           <Text style={styles.welcome}>Welcome</Text>

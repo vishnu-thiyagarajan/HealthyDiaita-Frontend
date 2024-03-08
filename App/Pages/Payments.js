@@ -30,41 +30,52 @@ export default function Payments (){
     const [history, setHistory] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [pageCount, setPageCount] = useState(0);
-    const [loadingMore, setLoadingMore] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const onChangeAmount = (text)=>{
         if(Number(text)||!text) setAmount(text)
     };
     const getHistory = async() => {
-        setLoadingMore(true);
-        const resp = await getPayments(userData?.user?.email, 1, pageSize).catch((e)=>alert(e));
-        setHistory(formatResp(resp));
-        setLoadingMore(false);
-        setCurrentPage(resp?.data?.meta?.pagination?.page);
-        setPageCount(resp?.data?.meta?.pagination?.pageCount);
+        setRefreshing(true);
+        try {
+            const resp = await getPayments(userData?.id, 1, pageSize).catch((e)=>alert(e));
+            setHistory(formatResp(resp));
+            setCurrentPage(resp?.data?.meta?.pagination?.page);
+            setPageCount(resp?.data?.meta?.pagination?.pageCount);
+        } catch (e) {
+            alert(e);
+        } finally {
+            setRefreshing(false);
+        }
     }
     const handleOnEndReached = async () => {
-        setLoadingMore(true);
-        if (!stopFetchMore) {
-          if (currentPage >= pageCount) return setLoadingMore(false);
-          const resp = await getPayments(userData?.user?.email, currentPage + 1, pageSize).catch((e)=>alert(e));
-          const formattedResp = formatResp(resp);
-          setHistory([...history, ...formattedResp]);
-          setCurrentPage(resp?.data?.meta?.pagination?.page);
-          stopFetchMore = true;
+        setRefreshing(true);
+        try {
+            if (!stopFetchMore) {
+            if (currentPage >= pageCount) return setRefreshing(false);
+            const resp = await getPayments(userData?.id, currentPage + 1, pageSize).catch((e)=>alert(e));
+            const formattedResp = formatResp(resp);
+            setHistory([...history, ...formattedResp]);
+            setCurrentPage(resp?.data?.meta?.pagination?.page);
+            stopFetchMore = true;
+            }
+        } catch (e) {
+            alert(e);
+        } finally {
+            setRefreshing(false);
         }
-        setLoadingMore(false);
       };
     useEffect(()=>{
         getHistory();
     },[])
     const pay = async () => {
         if(!amount) return alert('Please enter amount');
-        setLoadingMore(true);
+        setLoading(true);
         const amountInRs = Number(amount) * 100;
         const orderData = {
             amount: amountInRs,
             currency: paymentOptions.currency,
-            receipt: userData?.user?.email,
+            receipt: userData?.email,
         };
         
         try {
@@ -74,15 +85,15 @@ export default function Payments (){
                 amount: amountInRs,
                 order_id: response?.data?.id,
                 prefill: {
-                email: userData?.user?.email,
-                name: userData?.user?.name,
+                email: userData?.email,
+                name: userData?.name,
                 },
             }
             RazorpayCheckout.open(options).then(async (data) => {
                 if (data.razorpay_order_id) {
                     const isSignatureVerified = verifySignature(response?.data?.id, data.razorpay_payment_id, data.razorpay_signature);
                     if(isSignatureVerified) {
-                        await postPayments({data: { email: userData?.user?.email, ...data, amount: Number(amount)}}).catch(err => alert(err));
+                        await postPayments({data: { users_permissions_user: userData?.id, ...data, amount: Number(amount)}}).catch(err => alert(err));
                         alert(`Payment was successfully done!`);
                         setAmount('');
                         getHistory();
@@ -93,10 +104,11 @@ export default function Payments (){
             });
         } catch (error) {
             alert('Error:', JSON.stringify(error));
+        } finally {
+        setLoading(false);
         }
-        setLoadingMore(false);
     }
-    if (loadingMore) return <Loader />;
+    if (loading) return <Loader />;
     return (
         <>
         <View style={styles.container}>
@@ -107,11 +119,13 @@ export default function Payments (){
             style={styles.input}
             placeholder='Enter amount'
             />
-            <TouchableOpacity onPress={pay} style={styles.button} disabled={loadingMore}>
+            <TouchableOpacity onPress={pay} style={styles.button} disabled={loading}>
                 <Text style={styles.buttonText}>Make Payment</Text>
             </TouchableOpacity>
         <FlatList
         data={history}
+        onRefresh={getHistory}
+        refreshing={refreshing}
         renderItem={({item}) => 
             <View style={styles.itemRow}>
                 <Text style={styles.text}>{item.createdAt}</Text>
@@ -126,8 +140,7 @@ export default function Payments (){
         onScrollBeginDrag={() => {
         stopFetchMore = false;
         }}
-        ListFooterComponent={() => loadingMore && <Loader />}
-        ListEmptyComponent={() => {loadingMore ? <Loader /> : <Text style={{textAlign: "center"}}>No Payments have been done</Text>}}
+        ListEmptyComponent={() => <Text style={styles.centerText}>No Payments have been done</Text>}
         ListHeaderComponent={()=> <View style={styles.header}>
                 <Text style={styles.headerText}>Payment Date & Time</Text>
                 <Text style={styles.headerText}>Amount</Text>
@@ -192,4 +205,5 @@ const styles = StyleSheet.create({
     },
     text: {color: Colors.darkText,},
     headerText: {color: Colors.lightText,},
+    centerText: {textAlign: "center"},
   })

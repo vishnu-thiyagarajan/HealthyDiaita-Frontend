@@ -11,10 +11,14 @@ import Colors from '../Shared/Colors';
 import Documents from '../Pages/Documents';
 import ShowImage from '../Pages/ShowImage';
 import Payments from '../Pages/Payments';
+import { TouchableOpacity } from 'react-native';
+import { AuthContext } from '../Context/AuthContext';
+import Loader from './Loader';
 
 const StackNav = () => {
     const Stack = createNativeStackNavigator();
     const navigation = useNavigation();
+    const openDrawer = ()=>navigation.dispatch(DrawerActions.openDrawer())
     return (
         <Stack.Navigator screenOptions={{
             statusBarColor: Colors.lightText,
@@ -25,24 +29,18 @@ const StackNav = () => {
             headerTitleAlign: 'center',
           }}>
             <Stack.Screen
-                name="Login"
-                component={Login}
-                options={{
-                    headerShown: false
-                }}
-            />
-            <Stack.Screen
                 name="Home"
                 component={Home}
                 options={{
                     headerLeft: ()=>{
                         return (
-                            <Ionicons
-                                onPress={()=>navigation.dispatch(DrawerActions.openDrawer())}
-                                name="menu" 
-                                size={24}
-                                color={Colors.primary}
-                            />
+                            <TouchableOpacity style={{padding:10}} onPress={openDrawer}>
+                                <Ionicons
+                                    name="menu" 
+                                    size={24}
+                                    color={Colors.primary}
+                                />
+                            </TouchableOpacity>
                         )
                     }
                 }}
@@ -70,7 +68,7 @@ const StackNav = () => {
     )
 }
 
-const DrawerNav = () => {
+const AppDrawerNav = () => {
     const Drawer = createDrawerNavigator();
     return (
         <Drawer.Navigator
@@ -86,10 +84,27 @@ const DrawerNav = () => {
     )
 }
 
+const AuthStackNav = () => {
+    const Stack = createNativeStackNavigator();
+    return (
+        <Stack.Navigator>
+            <Stack.Screen
+                name="Login"
+                component={Login}
+                options={{
+                    headerShown: false
+                }}
+            />
+        </Stack.Navigator>
+    )
+}
+
 export default function LandingScreen () {
+    const {userData, loading} = React.useContext(AuthContext);
+    if(loading) return <Loader/>
     return (
         <NavigationContainer>
-            <DrawerNav/>
+            {userData ? <AppDrawerNav/>: <AuthStackNav/>}
         </NavigationContainer>
     )
 }

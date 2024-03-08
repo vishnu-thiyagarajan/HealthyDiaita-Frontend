@@ -33,48 +33,66 @@ export default function FoodIntake () {
     const [data, setData] = useState({});
     const [currentPage, setCurrentPage] = useState(0);
     const [pageCount, setPageCount] = useState(0);
-    const [loadingMore, setLoadingMore] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const {userData} = useContext(AuthContext);
 
     const getData = async() => {
-      setLoadingMore(true);
-      const resp = await getFoodIntakes(userData?.user?.email, 1, pageSize).catch((e)=>alert(e));
-      let formattedResp = formatResponse(resp?.data?.data);
-      setData({...formattedResp});
-      setLoadingMore(false);
-      setCurrentPage(resp?.data?.meta?.pagination?.page);
-      setPageCount(resp?.data?.meta?.pagination?.pageCount);
+      try {
+        setRefreshing(true);
+        const resp = await getFoodIntakes(userData?.id, 1, pageSize).catch((e)=>alert(e));
+        let formattedResp = formatResponse(resp?.data?.data);
+        setData({...formattedResp});
+        setCurrentPage(resp?.data?.meta?.pagination?.page);
+        setPageCount(resp?.data?.meta?.pagination?.pageCount);
+      } catch (e) {
+        alert(e);
+      } finally {
+        setRefreshing(false);
+      }
     };
 
     const DeleteAlert = (id)=>{
       const del = async () => {
-        const res = await deleteFoodIntakes(id).catch(err => alert(err.message));
-        if(res.status === 200) {
-          alert('Data was deleted successfully!');
-          getData();
+        try {
+          setLoading(true);
+          const res = await deleteFoodIntakes(id).catch(err => alert(err.message));
+          if(res.status === 200) {
+            alert('Data was deleted successfully!');
+            getData();
+          }
+        } catch (e) {
+          alert(e);
+        } finally {
+          setLoading(false);
         }
       }
       return AlertTwoButton('Deleting...', 'Are you sure you want to delete?', null, del);
     }
 
     const handleOnEndReached = async () => {
-      setLoadingMore(true);
-      if (!stopFetchMore) {
-        if (currentPage >= pageCount) return setLoadingMore(false);
-        const resp = await getFoodIntakes(userData?.user?.email, currentPage + 1, pageSize).catch((e)=>alert(e));
-        let formattedResp = formatResponse(resp?.data?.data);
-        //data merging
-        const dataKeys = Object.keys(data);
-        const lastKey = dataKeys[dataKeys.length - 1];
-        if(data[lastKey] && formattedResp[lastKey]) {
-          formattedResp[lastKey] = [...data[lastKey], ...formattedResp[lastKey]];
-        }
+      setRefreshing(true);
+      try {
+        if (!stopFetchMore) {
+          if (currentPage >= pageCount) return setRefreshing(false);
+          const resp = await getFoodIntakes(userData?.id, currentPage + 1, pageSize).catch((e)=>alert(e));
+          let formattedResp = formatResponse(resp?.data?.data);
+          //data merging
+          const dataKeys = Object.keys(data);
+          const lastKey = dataKeys[dataKeys.length - 1];
+          if(data[lastKey] && formattedResp[lastKey]) {
+            formattedResp[lastKey] = [...data[lastKey], ...formattedResp[lastKey]];
+          }
 
-        setData({...data, ...formattedResp});
-        setCurrentPage(resp?.data?.meta?.pagination?.page);
-        stopFetchMore = true;
+          setData({...data, ...formattedResp});
+          setCurrentPage(resp?.data?.meta?.pagination?.page);
+          stopFetchMore = true;
+        }
+      } catch (e) {
+        alert(e);
+      } finally {
+        setRefreshing(false);
       }
-      setLoadingMore(false);
     };
 
     useEffect(()=>{
@@ -82,9 +100,11 @@ export default function FoodIntake () {
       },[]);
     return (
       <>
-        {loadingMore && <Loader />}
+        {loading && <Loader />}
         <FlatList
-        ListEmptyComponent={() => loadingMore ? <Loader /> : <Text style={{textAlign: "center"}}>No FoodIntake have been added</Text>}
+        ListEmptyComponent={() => refreshing ? <Loader /> : <Text style={styles.centerText}>No FoodIntake have been added</Text>}
+        onRefresh={getData}
+        refreshing={refreshing}
         style={styles.container}
         data={Object.keys(data)}
         keyExtractor={(item, index) => index.toString()}
@@ -92,7 +112,6 @@ export default function FoodIntake () {
         onScrollBeginDrag={() => {
           stopFetchMore = false;
         }}
-        ListFooterComponent={() => loadingMore && <Loader />}
         onEndReached={handleOnEndReached}
         renderItem={({item})=>{
           return (
@@ -142,5 +161,6 @@ const styles = StyleSheet.create({
     meal:{
       color: Colors.darkText,
     },
-    section: {flex:1, flexDirection:'row', justifyContent:'space-between'}
+    section: {flex:1, flexDirection:'row', justifyContent:'space-between'},
+    centerText: {textAlign: "center"},
   })
