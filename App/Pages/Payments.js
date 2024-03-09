@@ -8,6 +8,7 @@ import { paymentOptions } from '../Shared/Utils/Constants';
 import { verifySignature } from '../Shared/Utils/utils';
 import { Ionicons } from '@expo/vector-icons';
 import Loader from '../Components/Loader';
+import EmptyListMessage from '../Components/EmptyListMessage';
 
 const pageSize = 25;
 let stopFetchMore = true;
@@ -25,7 +26,8 @@ const formatResp = (resp) => {
     })
 }
 export default function Payments (){
-    const { userData } = useContext(AuthContext);
+    const {userData, selectedUser} = useContext(AuthContext);
+    const userID = userData.role === 'Admin' ? selectedUser?.id : userData?.id;
     const [amount, setAmount] = useState('');
     const [history, setHistory] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
@@ -36,16 +38,16 @@ export default function Payments (){
         if(Number(text)||!text) setAmount(text)
     };
     const getHistory = async() => {
-        setRefreshing(true);
+        setLoading(true);
         try {
-            const resp = await getPayments(userData?.id, 1, pageSize).catch((e)=>alert(e));
+            const resp = await getPayments(userID, 1, pageSize).catch((e)=>alert(e));
             setHistory(formatResp(resp));
             setCurrentPage(resp?.data?.meta?.pagination?.page);
             setPageCount(resp?.data?.meta?.pagination?.pageCount);
         } catch (e) {
             alert(e);
         } finally {
-            setRefreshing(false);
+            setLoading(false);
         }
     }
     const handleOnEndReached = async () => {
@@ -53,7 +55,7 @@ export default function Payments (){
         try {
             if (!stopFetchMore) {
             if (currentPage >= pageCount) return setRefreshing(false);
-            const resp = await getPayments(userData?.id, currentPage + 1, pageSize).catch((e)=>alert(e));
+            const resp = await getPayments(userID, currentPage + 1, pageSize).catch((e)=>alert(e));
             const formattedResp = formatResp(resp);
             setHistory([...history, ...formattedResp]);
             setCurrentPage(resp?.data?.meta?.pagination?.page);
@@ -93,7 +95,7 @@ export default function Payments (){
                 if (data.razorpay_order_id) {
                     const isSignatureVerified = verifySignature(response?.data?.id, data.razorpay_payment_id, data.razorpay_signature);
                     if(isSignatureVerified) {
-                        await postPayments({data: { users_permissions_user: userData?.id, ...data, amount: Number(amount)}}).catch(err => alert(err));
+                        await postPayments({data: { user: userData?.id, ...data, amount: Number(amount)}}).catch(err => alert(err));
                         alert(`Payment was successfully done!`);
                         setAmount('');
                         getHistory();
@@ -108,10 +110,11 @@ export default function Payments (){
         setLoading(false);
         }
     }
-    if (loading) return <Loader />;
     return (
         <>
+        {loading && <Loader />}
         <View style={styles.container}>
+            {userData.role === 'Client' && <>
             <TextInput
             name='amount'
             value={amount}
@@ -122,7 +125,8 @@ export default function Payments (){
             <TouchableOpacity onPress={pay} style={styles.button} disabled={loading}>
                 <Text style={styles.buttonText}>Make Payment</Text>
             </TouchableOpacity>
-        <FlatList
+            </>}
+        {!loading && <FlatList
         data={history}
         onRefresh={getHistory}
         refreshing={refreshing}
@@ -140,14 +144,14 @@ export default function Payments (){
         onScrollBeginDrag={() => {
         stopFetchMore = false;
         }}
-        ListEmptyComponent={() => <Text style={styles.centerText}>No Payments have been done</Text>}
+        ListEmptyComponent={() => <EmptyListMessage message="No Payments have been done"/>}
         ListHeaderComponent={()=> <View style={styles.header}>
                 <Text style={styles.headerText}>Payment Date & Time</Text>
                 <Text style={styles.headerText}>Amount</Text>
                 <Text style={styles.headerText}>Status</Text>
             </View>}
-            onEndReached={handleOnEndReached}
-        />
+        onEndReached={handleOnEndReached}
+        />}
         </View>
       </>
     )
@@ -205,5 +209,4 @@ const styles = StyleSheet.create({
     },
     text: {color: Colors.darkText,},
     headerText: {color: Colors.lightText,},
-    centerText: {textAlign: "center"},
   })

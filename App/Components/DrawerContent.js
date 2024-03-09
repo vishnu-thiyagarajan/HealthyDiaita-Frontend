@@ -10,19 +10,22 @@ import { AuthContext } from '../Context/AuthContext';
 
 const DrawerList = [
   {icon: 'home', label: 'Home', navigateTo: 'Home'},
-  {icon: 'document', label: 'Documents', navigateTo: 'Documents'},
   {icon: 'restaurant', label: 'Food Intake', navigateTo: 'FoodIntake'},
+  {icon: 'document', label: 'Documents', navigateTo: 'Documents'},
   {icon: 'card', label: 'Payments', navigateTo: 'Payments'},
 ];
 const DrawerLayout = ({icon, label, navigateTo}) => {
+  const { userData, selectedUser } = useContext(AuthContext);
   const navigation = useNavigation();
+  const moveTo = () => {
+    if (userData?.role === 'Admin' && !selectedUser) return alert('Please select a user');
+    navigation.navigate(navigateTo);
+  }
   return (
     <DrawerItem
       icon={({color, size}) => <Ionicons name={icon} color={Colors.primary} size={size} />}
       label={label}
-      onPress={() => {
-        navigation.navigate(navigateTo);
-      }}
+      onPress={moveTo}
     />
   );
 };

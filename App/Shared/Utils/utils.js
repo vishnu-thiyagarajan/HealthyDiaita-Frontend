@@ -42,3 +42,7 @@ export const capitalizeFirstLetter = (word) => {
     if(!word) return ''
     return(word[0].toUpperCase() + word.slice(1));
 }
+
+export const truncate = (str, maxLength) => {
+    return str?.length > maxLength ? str.slice(0, maxLength - 1) + '..' : str;
+}

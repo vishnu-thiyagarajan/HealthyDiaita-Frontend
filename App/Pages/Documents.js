@@ -8,6 +8,7 @@ import Colors from '../Shared/Colors';
 import { AlertTwoButton } from '../Shared/Components/AlertWithButton';
 import DocumentPicker from 'react-native-document-picker'
 import Loader from '../Components/Loader';
+import EmptyListMessage from '../Components/EmptyListMessage';
 
 const deviceHeight = Dimensions.get('window').height;
 const deviceWidth = Dimensions.get('window').width;
@@ -35,19 +36,21 @@ export default function Documents (){
     const [pageCount, setPageCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const {userData} = useContext(AuthContext);
+    const {userData, selectedUser} = useContext(AuthContext);
+
+    const userID = userData.role === 'Admin' ? selectedUser?.id : userData?.id;
 
     const getData = async () => {
-        setRefreshing(true);
+      setLoading(true);
         try {
-        const resp = await getDocuments(userData?.id, 1, pageSize).catch((e)=>alert(e));
+        const resp = await getDocuments(userID, 1, pageSize).catch((e)=>alert(e));
         setData(formatResp(resp));
         setCurrentPage(resp?.data?.meta?.pagination?.page);
         setPageCount(resp?.data?.meta?.pagination?.pageCount);
         } catch (e) {
           alert(e);
         } finally {
-          setRefreshing(false);
+          setLoading(false);
         }
     }
     const DeleteAlert = (id, fileid)=>{
@@ -75,7 +78,7 @@ export default function Documents (){
       try {
         if (!stopFetchMore) {
           if (currentPage >= pageCount) return setRefreshing(false);
-          const resp = await getDocuments(userData?.id, currentPage + 1, pageSize).catch((e)=>alert(e));
+          const resp = await getDocuments(userID, currentPage + 1, pageSize).catch((e)=>alert(e));
           const formattedResp = formatResp(resp);
           setData([...data, ...formattedResp]);
           setCurrentPage(resp?.data?.meta?.pagination?.page);
@@ -112,7 +115,7 @@ export default function Documents (){
         });
         formData.append('ref', 'api::document.document');
         formData.append('field', 'file');
-        const record = await postDocuments({ data: { users_permissions_user: userData?.id}});
+        const record = await postDocuments({ data: { user: userID}});
         const refId = record?.data?.data?.id;
         if(!refId) throw new Error('Record not created');
         formData.append('refId', String(refId));
@@ -138,9 +141,9 @@ export default function Documents (){
           </TouchableOpacity>
           <Text style={styles.helperText}>*Long press to delete uploaded files!</Text>
         </View>
-        <FlatList
+        {!loading && <FlatList
           contentContainerStyle={{ flexGrow: 1 }}
-          ListEmptyComponent={() => refreshing ? <Loader/> : <Text style={styles.centerText}>No Files have been added</Text>}
+          ListEmptyComponent={() => <EmptyListMessage message="No Files have been added" />}
           style={styles.container}
           onRefresh={getData}
           refreshing={refreshing}
@@ -170,7 +173,7 @@ export default function Documents (){
               </Pressable>
             )
           }}
-          />
+          />}
       </>
     )
 }
@@ -210,5 +213,4 @@ const styles = StyleSheet.create({
   },
   header: { marginHorizontal: 30, marginVertical: 20,},
   helperText: { fontSize: 12, color: Colors.secondary, textAlign: 'center' },
-  centerText: {textAlign: "center"},
 })

@@ -7,6 +7,7 @@ import Colors from '../Shared/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertTwoButton } from '../Shared/Components/AlertWithButton';
 import Loader from '../Components/Loader';
+import EmptyListMessage from '../Components/EmptyListMessage';
 
 const pageSize = 25;
 let stopFetchMore = true;
@@ -35,12 +36,12 @@ export default function FoodIntake () {
     const [pageCount, setPageCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const {userData} = useContext(AuthContext);
-
+    const {userData, selectedUser} = useContext(AuthContext);
+    const userID = userData?.role === 'Admin' ? selectedUser?.id : userData?.id;
     const getData = async() => {
       try {
-        setRefreshing(true);
-        const resp = await getFoodIntakes(userData?.id, 1, pageSize).catch((e)=>alert(e));
+        setLoading(true);
+        const resp = await getFoodIntakes(userID, 1, pageSize).catch((e)=>alert(e));
         let formattedResp = formatResponse(resp?.data?.data);
         setData({...formattedResp});
         setCurrentPage(resp?.data?.meta?.pagination?.page);
@@ -48,7 +49,7 @@ export default function FoodIntake () {
       } catch (e) {
         alert(e);
       } finally {
-        setRefreshing(false);
+        setLoading(false);
       }
     };
 
@@ -75,7 +76,7 @@ export default function FoodIntake () {
       try {
         if (!stopFetchMore) {
           if (currentPage >= pageCount) return setRefreshing(false);
-          const resp = await getFoodIntakes(userData?.id, currentPage + 1, pageSize).catch((e)=>alert(e));
+          const resp = await getFoodIntakes(userID, currentPage + 1, pageSize).catch((e)=>alert(e));
           let formattedResp = formatResponse(resp?.data?.data);
           //data merging
           const dataKeys = Object.keys(data);
@@ -101,8 +102,8 @@ export default function FoodIntake () {
     return (
       <>
         {loading && <Loader />}
-        <FlatList
-        ListEmptyComponent={() => refreshing ? <Loader /> : <Text style={styles.centerText}>No FoodIntake have been added</Text>}
+        {!loading && <FlatList
+        ListEmptyComponent={() => <EmptyListMessage message="No FoodIntake have been added"/>}
         onRefresh={getData}
         refreshing={refreshing}
         style={styles.container}
@@ -139,7 +140,7 @@ export default function FoodIntake () {
             </>
           )
         }}
-      />
+      />}
     </>
   )
 }
@@ -162,5 +163,4 @@ const styles = StyleSheet.create({
       color: Colors.darkText,
     },
     section: {flex:1, flexDirection:'row', justifyContent:'space-between'},
-    centerText: {textAlign: "center"},
   })

@@ -39,7 +39,7 @@ export default function HomeClient (){
     try {
       if(!food || food.length < 5) return alert('Please describe your meal!');
       setLoading(true);
-      const data = {data: {food, note, date: date.setUTCHours(...mealTime.split(',')), users_permissions_user: userData?.id}};
+      const data = {data: {food, note, date: date.setUTCHours(...mealTime.split(',')), user: userData?.id}};
       const response = await postFoodIntakes(data).catch((e)=>alert(e.message));
       if(response.status === 200){
         alert('Food intake added successfully!');

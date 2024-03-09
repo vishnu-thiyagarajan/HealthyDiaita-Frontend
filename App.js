@@ -16,6 +16,7 @@ import { apiClient } from './App/Shared/Axios';
 
 export default function App() {
   const [userData, setUserData] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
   GoogleSignin.configure({
@@ -55,13 +56,14 @@ export default function App() {
     }
   };
 
-  const signInAndSetRole = async () => {
+  const signInOnNeed = async () => {
     setLoading(true);
     try {
       const cache = await get('auth');
       const isSignedIn = await GoogleSignin.isSignedIn();
       if(cache && isSignedIn) {
         setUserData(cache)
+        apiClient.defaults.headers.common = {'Authorization': `Bearer ${cache?.jwt}`}
       } else {
         signIn();
       }
@@ -73,6 +75,7 @@ export default function App() {
   }
   
   const signOut = async () => {
+    setLoading(true);
     try {
         await GoogleSignin.signOut();
         setUserData(null);
@@ -80,15 +83,18 @@ export default function App() {
         await set('auth', null);
     } catch (error) {
         alert(`unexpected error : ${error}`);
+    } finally {
+      setLoading(false);
     }
   };
+
   useEffect(()=>{
     LogBox.ignoreAllLogs()
-    signInAndSetRole();
+    signInOnNeed();
   },[])
 
   return (
-      <AuthContext.Provider value={{userData, loading, signIn, signOut}}>
+      <AuthContext.Provider value={{selectedUser, setSelectedUser, userData, loading, signIn, signOut}}>
         <LandingScreen />
       </AuthContext.Provider>
   );

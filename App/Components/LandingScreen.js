@@ -11,14 +11,28 @@ import Colors from '../Shared/Colors';
 import Documents from '../Pages/Documents';
 import ShowImage from '../Pages/ShowImage';
 import Payments from '../Pages/Payments';
-import { TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 import { AuthContext } from '../Context/AuthContext';
 import Loader from './Loader';
+import { truncate } from '../Shared/Utils/utils';
 
 const StackNav = () => {
+    const {selectedUser} = React.useContext(AuthContext);
     const Stack = createNativeStackNavigator();
     const navigation = useNavigation();
     const openDrawer = ()=>navigation.dispatch(DrawerActions.openDrawer())
+    const headerRight = ()=><Text style={{ color: Colors.darkText}}>{truncate(selectedUser?.username, 15)}</Text>
+    const headerLeft = ()=>{
+        return (
+            <TouchableOpacity style={{padding:10}} onPress={openDrawer}>
+                <Ionicons
+                    name="menu" 
+                    size={24}
+                    color={Colors.primary}
+                />
+            </TouchableOpacity>
+        )
+    }
     return (
         <Stack.Navigator screenOptions={{
             statusBarColor: Colors.lightText,
@@ -32,26 +46,33 @@ const StackNav = () => {
                 name="Home"
                 component={Home}
                 options={{
-                    headerLeft: ()=>{
-                        return (
-                            <TouchableOpacity style={{padding:10}} onPress={openDrawer}>
-                                <Ionicons
-                                    name="menu" 
-                                    size={24}
-                                    color={Colors.primary}
-                                />
-                            </TouchableOpacity>
-                        )
-                    }
+                    headerLeft,
+                    headerRight,
                 }}
             />
             <Stack.Screen 
                 name="FoodIntake" 
-                component={FoodIntake} 
+                component={FoodIntake}
+                options={{
+                    headerLeft,
+                    headerRight,
+                }} 
             />
             <Stack.Screen 
                 name="Documents" 
-                component={Documents} 
+                component={Documents}
+                options={{
+                    headerLeft,
+                    headerRight,
+                }} 
+            />
+            <Stack.Screen 
+                name="Payments"  
+                component={Payments}
+                options={{
+                    headerLeft,
+                    headerRight,
+                }}
             />
             <Stack.Screen 
                 name="ShowImage"  
@@ -59,10 +80,6 @@ const StackNav = () => {
                 options={{
                     headerShown: false
                 }}
-            />
-            <Stack.Screen 
-                name="Payments"  
-                component={Payments}
             />
         </Stack.Navigator>
     )
