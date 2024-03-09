@@ -17,11 +17,11 @@ import Loader from './Loader';
 import { truncate } from '../Shared/Utils/utils';
 
 const StackNav = () => {
-    const {selectedUser} = React.useContext(AuthContext);
+    const {userData, selectedUser} = React.useContext(AuthContext);
     const Stack = createNativeStackNavigator();
     const navigation = useNavigation();
     const openDrawer = ()=>navigation.dispatch(DrawerActions.openDrawer())
-    const headerRight = ()=><Text style={{ color: Colors.darkText}}>{truncate(selectedUser?.username, 15)}</Text>
+    const headerRight = ()=>userData.role === 'Admin' &&<Text style={{ color: Colors.darkText}}>{truncate(selectedUser?.username, 15)}</Text>
     const headerLeft = ()=>{
         return (
             <TouchableOpacity style={{padding:10}} onPress={openDrawer}>
