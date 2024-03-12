@@ -1,18 +1,18 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { Image, View, Dimensions, Pressable, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import { AuthContext } from '../Context/AuthContext';
-import { getDocuments, deleteDocuments, uploadDocuments, postDocuments, deleteFile } from '../Shared/Services/Documents';
 import { BACKEND_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import DocumentPicker, { types } from 'react-native-document-picker';
+import Button from '../Components/Button';
+import EmptyListMessage from '../Components/EmptyListMessage';
+import ShowDoc from '../Components/ShowDoc';
+import { AuthContext } from '../Context/AuthContext';
 import Colors from '../Shared/Colors';
 import { AlertTwoButton } from '../Shared/Components/AlertWithButton';
-import DocumentPicker from 'react-native-document-picker'
-import Loader from '../Components/Loader';
-import EmptyListMessage from '../Components/EmptyListMessage';
+import Loader from '../Shared/Components/Loader';
+import { deleteDocuments, deleteFile, getDocuments, postDocuments, uploadDocuments } from '../Shared/Services/Documents';
 
-const deviceHeight = Dimensions.get('window').height;
-const deviceWidth = Dimensions.get('window').width;
-const pageSize = 20;
+const pageSize = 18;
 let stopFetchMore = true;
 
 const formatResp = (resp) => {
@@ -39,6 +39,7 @@ export default function Documents (){
     const {userData, selectedUser} = useContext(AuthContext);
 
     const userID = userData.role === 'Admin' ? selectedUser?.id : userData?.id;
+    const userName = userData.role === 'Admin' ? selectedUser?.username : userData?.username;
 
     const getData = async () => {
       setLoading(true);
@@ -57,10 +58,10 @@ export default function Documents (){
       const del = async () => {
         try {
           setLoading(true);
-          const resp = await deleteFile(fileid).catch(err => alert(JSON.stringify(err)));
-          if(resp.status === 200) {
-            const res = await deleteDocuments(id).catch(err => alert(JSON.stringify(err)));
-            if(res.status === 200) {
+          const res = await deleteDocuments(id).catch(err => alert(JSON.stringify(err)));
+          if(res.status === 200) {
+            const resp = await deleteFile(fileid).catch(err => alert(JSON.stringify(err)));
+            if(resp.status === 200) {
               alert('Data was deleted successfully!');
               getData();
             }
@@ -101,7 +102,9 @@ export default function Documents (){
       setLoading(true);
       try {
         const docRes = await DocumentPicker.pickSingle({
-          type: [DocumentPicker.types.images, DocumentPicker.types.pdf]
+          presentationStyle: 'fullScreen',
+          type: [DocumentPicker.types.images, DocumentPicker.types.pdf],
+          allowMultiSelection: false,
         });
         if(docRes.size > 10000000) {
           setLoading(false);
@@ -110,7 +113,7 @@ export default function Documents (){
         const formData = new FormData();
         formData.append('files', {
           uri: docRes.uri,
-          name: docRes.name,
+          name: userName + '|' + docRes.name,
           type: docRes.type
         });
         formData.append('ref', 'api::document.document');
@@ -123,6 +126,8 @@ export default function Documents (){
         if(res.status === 200) {
           alert('File was uploaded successfully!');
           getData();
+        } else if(res.status === 400 || res.status === 500) {
+          alert('Something went wrong, please try again!');
         }
       } catch (error) {
         if(!DocumentPicker.isCancel(error))
@@ -132,18 +137,20 @@ export default function Documents (){
       }
     };
 
+    const renderDoc = useCallback(({item}) => <ShowDoc item={item} DeleteAlert={DeleteAlert} navigeTo={navigeTo} />, [data]);
+    const emptyDoc = () => <EmptyListMessage message="No Files have been added" />
+    const scrollStart = () => stopFetchMore = false;
+    
     return (
       <>
         {loading && <Loader/>}
         <View style={styles.header}>
-          <TouchableOpacity onPress={pickFile} style={styles.button} disabled={loading}>
-            <Text style={styles.buttonText}>Upload Documents</Text>
-          </TouchableOpacity>
+          <Button text="Upload Document" onPress={pickFile} disabled={loading} />
           <Text style={styles.helperText}>*Long press to delete uploaded files!</Text>
         </View>
         {!loading && <FlatList
-          contentContainerStyle={{ flexGrow: 1 }}
-          ListEmptyComponent={() => <EmptyListMessage message="No Files have been added" />}
+          contentContainerStyle={styles.content}
+          ListEmptyComponent={emptyDoc}
           style={styles.container}
           onRefresh={getData}
           refreshing={refreshing}
@@ -151,66 +158,24 @@ export default function Documents (){
           numColumns={3}
           keyExtractor={(item, index) => index.toString()}
           onEndReachedThreshold={0}
-          onScrollBeginDrag={() => {
-            stopFetchMore = false;
-          }}
+          onScrollBeginDrag={scrollStart}
           onEndReached={handleOnEndReached}
-          renderItem={({item})=>{
-            const delFunc = () => DeleteAlert(item.id, item.fileid);
-            const openFunc = ()=> navigeTo(item);
-            return( 
-              <Pressable key={item.id} onPress={item.name ? openFunc : null} onLongPress={delFunc}>
-                {item.ext === '.pdf' || !item.name ?
-                <View style={styles.docs}>
-                  <Text>{item.name|| "File Not Uploaded"}</Text>
-                </View>
-                :
-                <Image
-                  source={{ uri: item.thumbnail }}
-                  style={styles.docs}
-                />
-                }
-              </Pressable>
-            )
-          }}
+          renderItem={renderDoc}
           />}
       </>
     )
 }
 
 const styles = StyleSheet.create({
+  content: {
+    flexGrow: 1
+  },
   container: {
     display: 'flex', 
     flexDirection: 'row', 
     flexWrap:'wrap',
   },
   scroll: {backgroundColor: Colors.darkText,},
-  docs: { 
-    justifyContent:'center', 
-    alignItems: 'center', 
-    width: deviceWidth/3 -6, 
-    height: deviceHeight/5,
-    borderRadius: 10, 
-    margin:2, 
-    borderWidth: 1,
-    borderColor: Colors.primary, 
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    padding: 10,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  buttonText: { 
-    marginLeft: 10,
-    fontSize: 20, 
-    color: Colors.secondary, 
-    textAlign: 'center', 
-    fontWeight: 'bold'
-  },
   header: { marginHorizontal: 30, marginVertical: 20,},
   helperText: { fontSize: 12, color: Colors.secondary, textAlign: 'center' },
 })

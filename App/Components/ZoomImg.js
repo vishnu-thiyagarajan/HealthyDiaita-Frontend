@@ -1,9 +1,9 @@
-import React, { useState, useRef, createRef } from 'react';
-import { View, Animated } from 'react-native';
+import React, { createRef, useRef, useState } from 'react';
+import { Animated, View } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler, State } from 'react-native-gesture-handler';
 
 
-export const ZoomImg = ({url}) => {
+export const ZoomImg = React.memo(({url}) => {
 
   const [panEnabled, setPanEnabled] = useState(false);
 
@@ -86,4 +86,4 @@ export const ZoomImg = ({url}) => {
       </PanGestureHandler>
     </View>
   );
-};
+});

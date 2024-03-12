@@ -1,27 +1,28 @@
-import * as React from 'react';
-import {NavigationContainer, useNavigation, DrawerActions} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import Home from '../Pages/Home';
-import FoodIntake from '../Pages/FoodIntake';
-import Login from '../Pages/Login';
-import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
-import DrawerContent from './DrawerContent';
-import Colors from '../Shared/Colors';
-import Documents from '../Pages/Documents';
-import ShowImage from '../Pages/ShowImage';
-import Payments from '../Pages/Payments';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { DrawerActions, NavigationContainer, useNavigation } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as React from 'react';
 import { Text, TouchableOpacity } from 'react-native';
 import { AuthContext } from '../Context/AuthContext';
-import Loader from './Loader';
+import Documents from '../Pages/Documents';
+import FoodIntake from '../Pages/FoodIntake';
+import Home from '../Pages/Home';
+import Login from '../Pages/Login';
+import Payments from '../Pages/Payments';
+import ShowImage from '../Pages/ShowImage';
+import Colors from '../Shared/Colors';
+import Loader from '../Shared/Components/Loader';
 import { truncate } from '../Shared/Utils/utils';
+import DrawerContent from './DrawerContent';
 
 const StackNav = () => {
     const {userData, selectedUser} = React.useContext(AuthContext);
+    const formatedName = truncate(selectedUser?.username, 15);
     const Stack = createNativeStackNavigator();
     const navigation = useNavigation();
     const openDrawer = ()=>navigation.dispatch(DrawerActions.openDrawer())
-    const headerRight = ()=>userData.role === 'Admin' &&<Text style={{ color: Colors.darkText}}>{truncate(selectedUser?.username, 15)}</Text>
+    const headerRight = ()=>userData.role === 'Admin' &&<Text style={{ color: Colors.darkText}}>{formatedName}</Text>
     const headerLeft = ()=>{
         return (
             <TouchableOpacity style={{padding:10}} onPress={openDrawer}>

@@ -1,5 +1,5 @@
-import React from 'react'
-import { View, Dimensions, StyleSheet } from 'react-native'
+import React from 'react';
+import { Dimensions, StyleSheet, View } from 'react-native';
 import Pdf from 'react-native-pdf';
 import { ZoomImg } from '../Components/ZoomImg';
 

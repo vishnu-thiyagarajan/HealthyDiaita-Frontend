@@ -1,5 +1,5 @@
+import { API_KEY, BACKEND_URL } from '@env';
 import axios from "axios";
-import {BACKEND_URL, API_KEY} from '@env';
 
 export const apiClient = axios.create({
   baseURL: `${BACKEND_URL}/api`,

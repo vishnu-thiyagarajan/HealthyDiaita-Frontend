@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react'
-import { Text, StyleSheet, TouchableOpacity, View, FlatList } from 'react-native'
-import { getFoodIntakes, deleteFoodIntakes } from '../Shared/Services/FoodIntake';
-import { AuthContext } from '../Context/AuthContext';
-import { getDateAndTimeFormatted, getMealTimeFormatted } from '../Shared/Utils/utils';
-import Colors from '../Shared/Colors';
-import { Ionicons } from '@expo/vector-icons';
-import { AlertTwoButton } from '../Shared/Components/AlertWithButton';
-import Loader from '../Components/Loader';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { FlatList, StyleSheet } from 'react-native';
 import EmptyListMessage from '../Components/EmptyListMessage';
+import ShowIntake from '../Components/ShowIntake';
+import { AuthContext } from '../Context/AuthContext';
+import { AlertTwoButton } from '../Shared/Components/AlertWithButton';
+import Loader from '../Shared/Components/Loader';
+import { deleteFoodIntakes, getFoodIntakes } from '../Shared/Services/FoodIntake';
+import { getDateAndTimeFormatted, getMealTimeFormatted } from '../Shared/Utils/utils';
 
 const pageSize = 25;
 let stopFetchMore = true;
@@ -99,47 +98,25 @@ export default function FoodIntake () {
     useEffect(()=>{
         getData();
       },[]);
+
+    const renderIntake = useCallback(({item}) => <ShowIntake item={item} data={data} DeleteAlert={DeleteAlert}/>, [data])
+    const emptyIntake = () => <EmptyListMessage message="No FoodIntake have been added"/>
+    const scrollStart = () => stopFetchMore = false;
+
     return (
       <>
         {loading && <Loader />}
         {!loading && <FlatList
-        ListEmptyComponent={() => <EmptyListMessage message="No FoodIntake have been added"/>}
+        ListEmptyComponent={emptyIntake}
         onRefresh={getData}
         refreshing={refreshing}
         style={styles.container}
         data={Object.keys(data)}
         keyExtractor={(item, index) => index.toString()}
         onEndReachedThreshold={0}
-        onScrollBeginDrag={() => {
-          stopFetchMore = false;
-        }}
+        onScrollBeginDrag={scrollStart}
         onEndReached={handleOnEndReached}
-        renderItem={({item})=>{
-          return (
-            <>
-            <Text style={styles.date}>{item}</Text>
-              <View style={styles.itemRow}>
-                  {data[item].map(meal=>{
-                    const delFunc = () => DeleteAlert(meal.key);
-                    return (
-                      <View key={meal.key}>
-                        <View style={styles.section}>
-                          <Text style={styles.meal}>{meal.mealtime}</Text>
-                          <TouchableOpacity onPress={delFunc} activeOpacity={0.8}>
-                            <Ionicons name="trash-outline" size={24} color={Colors.primary} />
-                          </TouchableOpacity>
-                        </View>
-                        <View style={styles.itemSubRow}>
-                          <Text style={styles.meal}>{meal.food}</Text>
-                          {meal.note && <Text style={styles.meal}>note: {meal.note}</Text>}
-                        </View>
-                      </View>
-                    )
-                  })}
-              </View>
-            </>
-          )
-        }}
+        renderItem={renderIntake}
       />}
     </>
   )
@@ -150,17 +127,4 @@ const styles = StyleSheet.create({
       marginTop: 20,
       padding: 10,
     },
-    itemRow:{
-      marginBottom: 10,
-      padding: 10,
-      borderRadius: 10,
-      backgroundColor: Colors.secondary,
-    },
-    itemSubRow:{
-      padding: 10,
-    },
-    meal:{
-      color: Colors.darkText,
-    },
-    section: {flex:1, flexDirection:'row', justifyContent:'space-between'},
-  })
+})

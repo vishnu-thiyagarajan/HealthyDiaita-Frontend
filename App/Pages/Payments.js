@@ -1,14 +1,16 @@
-import React, {useContext, useEffect, useState} from 'react'
-import { Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList } from 'react-native'
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { FlatList, StyleSheet, TextInput, View } from 'react-native';
 import RazorpayCheckout from 'react-native-razorpay';
-import Colors from '../Shared/Colors';
+import Button from '../Components/Button';
+import EmptyListMessage from '../Components/EmptyListMessage';
+import ListHeader from '../Components/ListHeader';
+import ShowPay from '../Components/ShowPay';
 import { AuthContext } from '../Context/AuthContext';
-import { makeOrder, postPayments, getPayments } from '../Shared/Services/Payments';
+import Colors from '../Shared/Colors';
+import Loader from '../Shared/Components/Loader';
+import { getPayments, makeOrder, postPayments } from '../Shared/Services/Payments';
 import { paymentOptions } from '../Shared/Utils/Constants';
 import { verifySignature } from '../Shared/Utils/utils';
-import { Ionicons } from '@expo/vector-icons';
-import Loader from '../Components/Loader';
-import EmptyListMessage from '../Components/EmptyListMessage';
 
 const pageSize = 25;
 let stopFetchMore = true;
@@ -110,6 +112,10 @@ export default function Payments (){
         setLoading(false);
         }
     }
+    const renderPay = useCallback(({item}) => <ShowPay item={item} />, [history]);
+    const emptyPay = () => <EmptyListMessage message="No Payments have been done"/>
+    const payHeader = () => <ListHeader columns={['Payment Date & Time', 'Amount', 'Status']}/>
+    const scrollStart = () => stopFetchMore = false;
     return (
         <>
         {loading && <Loader />}
@@ -122,35 +128,19 @@ export default function Payments (){
             style={styles.input}
             placeholder='Enter amount'
             />
-            <TouchableOpacity onPress={pay} style={styles.button} disabled={loading}>
-                <Text style={styles.buttonText}>Make Payment</Text>
-            </TouchableOpacity>
+            <Button text="Make Payment" onPress={pay} disabled={loading} />
             </>}
-        {!loading && <FlatList
-        data={history}
-        onRefresh={getHistory}
-        refreshing={refreshing}
-        renderItem={({item}) => 
-            <View style={styles.itemRow}>
-                <Text style={styles.text}>{item.createdAt}</Text>
-                <Text style={styles.text}>₹{item.amount}</Text>
-                <Text style={styles.text}>{item.status_code === 200 ?
-                <Ionicons name="checkmark-circle" size={24} color={Colors.success} />
-                :
-                <Ionicons name="close-circle" size={24} color={Colors.failure} />}</Text>
-            </View>}
-        keyExtractor={item => item.id}
-        onEndReachedThreshold={0}
-        onScrollBeginDrag={() => {
-        stopFetchMore = false;
-        }}
-        ListEmptyComponent={() => <EmptyListMessage message="No Payments have been done"/>}
-        ListHeaderComponent={()=> <View style={styles.header}>
-                <Text style={styles.headerText}>Payment Date & Time</Text>
-                <Text style={styles.headerText}>Amount</Text>
-                <Text style={styles.headerText}>Status</Text>
-            </View>}
-        onEndReached={handleOnEndReached}
+            {!loading && <FlatList
+            data={history}
+            onRefresh={getHistory}
+            refreshing={refreshing}
+            renderItem={renderPay}
+            keyExtractor={item => item.id}
+            onEndReachedThreshold={0}
+            onScrollBeginDrag={scrollStart}
+            ListEmptyComponent={emptyPay}
+            ListHeaderComponent={payHeader}
+            onEndReached={handleOnEndReached}
         />}
         </View>
       </>
@@ -163,24 +153,6 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 10,
       },
-    button: {
-      backgroundColor: Colors.primary,
-      padding: 10,
-      marginHorizontal: 30,
-      marginVertical: 10,
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: 10,
-    },
-    buttonText: { 
-      marginLeft: 10,
-      fontSize: 20, 
-      color: Colors.secondary, 
-      textAlign: 'center', 
-      fontWeight: 'bold'
-    },
     input: {
         borderWidth: 1,
         padding: 10,
@@ -189,24 +161,5 @@ const styles = StyleSheet.create({
         color: Colors.lightText,
         borderRadius: 0,
     },
-    header:{
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignContent: 'center',
-        marginBottom: 10,
-        padding: 10,
-    },
-    itemRow:{
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignContent: 'center',
-        marginBottom: 10,
-        padding: 10,
-        borderRadius: 10,
-        backgroundColor: Colors.secondary,
-    },
-    text: {color: Colors.darkText,},
-    headerText: {color: Colors.lightText,},
+    
   })

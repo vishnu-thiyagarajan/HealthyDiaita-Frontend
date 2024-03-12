@@ -1,12 +1,12 @@
-import React, {useContext} from 'react';
-import {View, StyleSheet} from 'react-native';
-import {DrawerContentScrollView, DrawerItem} from '@react-navigation/drawer';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {useNavigation} from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import WelcomeHeader from './WelcomeHeader';
-import Colors from '../Shared/Colors';
+import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
+import { useNavigation } from '@react-navigation/native';
+import React, { useContext } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { AuthContext } from '../Context/AuthContext';
+import Colors from '../Shared/Colors';
+import WelcomeHeader from './WelcomeHeader';
 
 const DrawerList = [
   {icon: 'home', label: 'Home', navigateTo: 'Home'},
@@ -71,7 +71,7 @@ function DrawerContent(props) {
         </View>
     );
 }
-export default DrawerContent;
+export default React.memo(DrawerContent);
 
 const styles = StyleSheet.create({
   drawerContent: {

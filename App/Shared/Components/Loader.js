@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
 export default function Loader() {
   return (
     <View style={ [StyleSheet.absoluteFillObject, styles.container]}>
-        <Image source={require('./../Assets/loader.gif')} />
+        <Image source={require('./../../Assets/loader.gif')} />
     </View>
   );
 }

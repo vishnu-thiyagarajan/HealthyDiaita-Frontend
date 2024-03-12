@@ -1,10 +1,10 @@
-import React, {useContext} from 'react'
-import { Text, View, Image, StyleSheet } from 'react-native'
+import React, { useContext } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { AuthContext } from '../Context/AuthContext';
 import Colors from '../Shared/Colors';
 import { capitalizeFirstLetter } from '../Shared/Utils/utils';
 
-export default function WelcomeHeader () {
+function WelcomeHeader () {
     const {userData} = useContext(AuthContext);
     const formatedName = capitalizeFirstLetter(userData?.name);
     return (
@@ -37,3 +37,5 @@ const styles = StyleSheet.create({
         color: Colors.darkText
     }
 })
+
+export default React.memo(WelcomeHeader);

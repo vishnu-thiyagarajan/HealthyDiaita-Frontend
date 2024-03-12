@@ -1,29 +1,30 @@
-import React, { useState, useContext } from 'react'
-import { TouchableOpacity, Text, StyleSheet, View, ScrollView, TextInput, KeyboardAvoidingView } from 'react-native'
-import DateTimePicker from '@react-native-community/datetimepicker';
-import DropDownPicker from 'react-native-dropdown-picker';
-import Colors from '../Shared/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import { postFoodIntakes } from '../Shared/Services/FoodIntake';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useContext, useState, useRef } from 'react';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import DropDownPicker from 'react-native-dropdown-picker';
+import Button from '../Components/Button';
 import { AuthContext } from '../Context/AuthContext';
-import Loader from '../Components/Loader';
+import Colors from '../Shared/Colors';
+import Loader from '../Shared/Components/Loader';
+import { postFoodIntakes } from '../Shared/Services/FoodIntake';
+import { mealTimings } from '../Shared/Utils/Constants';
 
-const items = [
-  {label:'BreakFast', value:'3,30,0,0'},
-  {label:'Brunch', value:'5,30,0,0'},
-  {label:'Lunch', value:'8,30,0,0'},
-  {label:'Snacks', value:'11,30,0,0'},
-  {label:'Dinner', value:'14,30,0,0'},
-]
 export default function HomeClient (){
   const {userData} = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
-  const [mealTime, setMealTime] = useState(items[0].value);
+  const [mealTime, setMealTime] = useState(mealTimings[0].value);
   const [showDropDown, setShowDropDown] = useState(false);
-  const [food, setFood] = useState('');
-  const [note, setNote] = useState('');
+  const foodRef = useRef(null);
+  const noteRef = useRef(null);
+  const foodChange = value => {
+    foodRef.current.value = value;
+  }
+  const noteChange = value => {
+    noteRef.current.value = value
+  }
   const toggleDropDown = ()=> setShowDropDown((prv)=>!prv);
   const onChangeMealTime = (selectedItem) => {
     setMealTime(selectedItem);
@@ -33,20 +34,20 @@ export default function HomeClient (){
     setDate(selectedDate);
     setShow(false);
   };
-  const onChangeFood = (text) => setFood(text);
-  const onChangeNote = (text) => setNote(text);
   const add = async () => {
     try {
-      if(!food || food.length < 5) return alert('Please describe your meal!');
+      const food = foodRef.current.value;
+      const note = noteRef.current.value;
+      if(!food || food?.length < 5) return alert('Please describe your meal!');
       setLoading(true);
       const data = {data: {food, note, date: date.setUTCHours(...mealTime.split(',')), user: userData?.id}};
       const response = await postFoodIntakes(data).catch((e)=>alert(e.message));
       if(response.status === 200){
         alert('Food intake added successfully!');
-        setFood('');
-        setNote('');
-        setMealTime(items[0].value);
+        setMealTime(mealTimings[0].value);
         setDate(new Date());
+        foodRef.current.value = "";
+        noteRef.current.value = "";
       }
     } catch (e) {
       alert(e);
@@ -86,7 +87,7 @@ export default function HomeClient (){
         <Text>Meal time?</Text>
         <View>
           <DropDownPicker
-            items={items}
+            items={mealTimings}
             style={styles.dropDown}
             placeholder="Select a meal time"
             setOpen={toggleDropDown}
@@ -100,8 +101,9 @@ export default function HomeClient (){
         <Text>What was your meal?</Text>
         <TextInput
           name='food'
-          value={food}
-          onChangeText={onChangeFood}
+          ref={foodRef}
+          value={foodRef.current?.value}
+          onChangeText={foodChange}
           style={styles.input}
           editable
           multiline
@@ -111,17 +113,16 @@ export default function HomeClient (){
         <Text>Anything other than food? (optional)</Text>
         <TextInput
           name='note'
-          value={note}
-          onChangeText={onChangeNote}
+          ref={noteRef}
+          value={noteRef.current?.value}
+          onChangeText={noteChange}
           style={styles.input}
           editable
           multiline
           numberOfLines={4}
           maxLength={200}
         />
-        <TouchableOpacity onPress={add} style={styles.button} disabled={loading}>
-          <Text style={styles.buttonText}>Add food intake</Text>
-      </TouchableOpacity>
+        <Button text="Add food intake" onPress={add} disabled={loading} />
       </ScrollView>
     </KeyboardAvoidingView>
   )
@@ -154,23 +155,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginTop: 5,
     marginBottom: 5,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    padding: 10,
-    margin: 30,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-},
-  buttonText: { 
-    marginLeft: 10,
-    fontSize: 20, 
-    color: Colors.secondary, 
-    textAlign: 'center', 
-    fontWeight: 'bold'
   },
   wrapper: { flex: 1 }
 })

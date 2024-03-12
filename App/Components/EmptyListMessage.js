@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 
 function EmptyListMessage({message}) {
@@ -10,4 +10,4 @@ function EmptyListMessage({message}) {
 const styles = StyleSheet.create({
   centerText: {textAlign: "center"},
 });
-export default EmptyListMessage
+export default React.memo(EmptyListMessage)
