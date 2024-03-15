@@ -1,13 +1,14 @@
 import { GOOGLE_WEB_CLIENT_ID } from '@env';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import 'expo-dev-client';
+import SplashScreen from 'react-native-splash-screen'
 import { useEffect, useState } from 'react';
 import { LogBox } from 'react-native';
 import 'react-native-gesture-handler';
 import LandingScreen from './App/Components/LandingScreen';
 import { AuthContext } from './App/Context/AuthContext';
 import { apiClient } from './App/Shared/Axios';
-import { clear, get, set } from './App/Shared/LocalStorage';
+import { get, set } from './App/Shared/LocalStorage';
 import { getJWT } from './App/Shared/Services/Auth';
 import { getMe } from './App/Shared/Services/Users';
 
@@ -69,7 +70,8 @@ export default function App() {
         await GoogleSignin.signOut();
         setUserData(null);
         apiClient.defaults.headers.common = {'Authorization': ''}
-        await clear();
+        await set('auth', null);
+        await set('clientID', null);
     } catch (error) {
         alert(`unexpected error : ${error}`);
     } finally {
@@ -78,6 +80,7 @@ export default function App() {
   };
 
   useEffect(()=>{
+    SplashScreen.hide();
     LogBox.ignoreAllLogs()
     signInOnNeed();
   },[])
