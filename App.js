@@ -1,10 +1,9 @@
-import { GOOGLE_WEB_CLIENT_ID } from '@env';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import 'expo-dev-client';
-import SplashScreen from 'react-native-splash-screen'
 import { useEffect, useState } from 'react';
 import { LogBox } from 'react-native';
 import 'react-native-gesture-handler';
+import SplashScreen from 'react-native-splash-screen';
 import LandingScreen from './App/Components/LandingScreen';
 import { AuthContext } from './App/Context/AuthContext';
 import { apiClient } from './App/Shared/Axios';
@@ -18,7 +17,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   GoogleSignin.configure({
-    webClientId: GOOGLE_WEB_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     forceCodeForRefreshToken: true,
     accountName: "",
   });
@@ -80,6 +79,7 @@ export default function App() {
   };
 
   useEffect(()=>{
+    console.log(JSON.stringify(process.env))
     SplashScreen.hide();
     LogBox.ignoreAllLogs()
     signInOnNeed();

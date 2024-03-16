@@ -1,12 +1,11 @@
 import Colors from '../Colors';
-import {RP_USER_NAME} from '@env';
 
 export const paymentOptions = {
     name: 'Healthy Diaita',
     description: 'Consultation fees',
     image: 'https://healthydiaita.in/images/logo160.png',
     currency: 'INR',
-    key: RP_USER_NAME,
+    key: process.env.EXPO_PUBLIC_RP_USER_NAME,
     theme: {color: Colors.primary},
 }
 export const ignoreWarnings = [

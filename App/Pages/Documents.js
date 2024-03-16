@@ -1,4 +1,3 @@
-import { BACKEND_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
@@ -23,9 +22,9 @@ const formatResp = (resp) => {
             id: item.id,
             fileid: item.attributes?.file?.data?.id,
             name: file?.name,
-            url: BACKEND_URL + file?.url,
+            url: process.env.EXPO_PUBLIC_BACKEND_URL + file?.url,
             ext:  file?.ext,
-            thumbnail: BACKEND_URL + file?.formats?.thumbnail?.url,
+            thumbnail: process.env.EXPO_PUBLIC_BACKEND_URL + file?.formats?.thumbnail?.url,
         }
     })
 }

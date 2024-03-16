@@ -1,5 +1,4 @@
 import CryptoJS from 'crypto-js';
-import {RP_PASSWORD} from '@env';
 
 export const getDateAndTimeFormatted = (dateStr)=>{
     const date = new Date(dateStr);
@@ -33,7 +32,7 @@ export const getMealTimeFormatted = (timeStr)=>{
 
 export const verifySignature = (orderId, paymentId, razorpaySignature) => {
     const text = orderId + "|" + paymentId;
-    const generatedSignature = CryptoJS.HmacSHA256(text, RP_PASSWORD).toString();
+    const generatedSignature = CryptoJS.HmacSHA256(text, process.env.EXPO_PUBLIC_RP_PASSWORD).toString();
     return generatedSignature === razorpaySignature;
 }
 

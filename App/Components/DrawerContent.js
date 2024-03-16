@@ -107,7 +107,6 @@ const styles = StyleSheet.create({
   },
   drawerSection: {
     marginTop: 10,
-    borderBottomWidth: 0,
     borderBottomColor: '#dedede',
     borderBottomWidth: 1,
   },

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "23129691985",
+    "project_id": "healthydiaitaauth",
+    "storage_bucket": "healthydiaitaauth.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:23129691985:android:1c32d25fd67f24eda8a570",
+        "android_client_info": {
+          "package_name": "com.vishnuthiyagarajan.HealthyDiaita"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "23129691985-d38dd1ebeubi8cktndtog6r9krdvdc1f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vishnuthiyagarajan.HealthyDiaita",
+            "certificate_hash": "82bde2f1237e1df1c26fdca863bd7d58f7a2f3d9"
+          }
+        },
+        {
+          "client_id": "23129691985-tipreknk9e594m825rbcgj822rltf764.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vishnuthiyagarajan.HealthyDiaita",
+            "certificate_hash": "4553cc14f7622b91ca53d2d7ce73515e26f41540"
+          }
+        },
+        {
+          "client_id": "23129691985-odca9vqg3hogcmfahni4regvh2nfq6of.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5qk13GyKRsmaxQy_KA7XwZRBGUaU472s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "23129691985-odca9vqg3hogcmfahni4regvh2nfq6of.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

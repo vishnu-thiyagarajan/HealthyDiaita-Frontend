@@ -2,7 +2,27 @@
   "build": {
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "23129691985-odca9vqg3hogcmfahni4regvh2nfq6of.apps.googleusercontent.com",
+          "EXPO_PUBLIC_RP_ORDER_URL": "https://api.razorpay.com/v1/orders",
+          "EXPO_PUBLIC_RP_USER_NAME": "rzp_test_S7OSKdfd0IcvOb",
+          "EXPO_PUBLIC_RP_PASSWORD": "Ia88siXnaJjTyLSq4Rf4M1TR",
+          "EXPO_PUBLIC_BACKEND_URL": "https://www.backend.healthydiaita.in",
+          "EXPO_PUBLIC_API_KEY": "85004672b1eb4a64883e4ff10a62807034043a9934a4ea0c56e0135bd7ba22d506036133ddab5b129c8f6428157d87c0a72b2e45eda18caf02521c9bcb7269465e32f5238bf45b691931c6ed0d022968fecea04a1f337da0221b2d4e5ab4c340f2d44132934b635293ef997ac02c905d1437a7d9c46aa4abdcd752bfa966fbef"
+        }
+      }
+    },
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "23129691985-odca9vqg3hogcmfahni4regvh2nfq6of.apps.googleusercontent.com",
+        "EXPO_PUBLIC_RP_ORDER_URL": "https://api.razorpay.com/v1/orders",
+        "EXPO_PUBLIC_RP_USER_NAME": "rzp_test_S7OSKdfd0IcvOb",
+        "EXPO_PUBLIC_RP_PASSWORD": "Ia88siXnaJjTyLSq4Rf4M1TR",
+        "EXPO_PUBLIC_BACKEND_URL": "https://192.168.29.118:1337",
+        "EXPO_PUBLIC_API_KEY": "92ffae10137124b7b99f0933a2183d0acd6a36820de3047cfe500f24c7a34722b9dd0d30bcde75ce8cc5b8bbd78ca1c45cdcbc84c68f5390fd7f0d7e1b3e904e494528e68ac226bce2671d6f1fb10b0b591302fec1afd16d104da8dcc392d9a5be617a8aa572e59231d05a11cf90c538616fa731e6565c20df6e576f322b509b"
       }
     },
     "preview2": {

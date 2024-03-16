@@ -1,4 +1,4 @@
-rootProject.name = 'Healthy-Diaita'
+rootProject.name = 'Healthy Diaita'
 
 dependencyResolutionManagement {
   versionCatalogs {
